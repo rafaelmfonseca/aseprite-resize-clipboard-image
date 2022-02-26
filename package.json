@@ -1,12 +1,12 @@
 {
-    "name": "pixel-size",
-    "displayName": "Pixel Size",
-    "description": "Resize the pixels of the current selection or the clipboard.",
-    "version": "0.1",
+    "name": "resize-clipboard-image",
+    "displayName": "Resize Clipboard Image",
+    "description": "Resize the pixels of the current clipboard image.",
+    "version": "1.0",
     "author": {
         "name": "Rafael Moreira Fonseca"
     },
     "contributes": {
-        "scripts": "Pixel Size.lua"
+        "scripts": "Resize Clipboard Image.lua"
     }
 }
