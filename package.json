@@ -7,6 +7,9 @@
         "name": "Rafael Moreira Fonseca"
     },
     "contributes": {
-        "scripts": "Resize Clipboard Image.lua"
+        "scripts": [
+            { "path": "LIP.lua" },
+            { "path": "Resize Clipboard Image.lua" }
+        ]
     }
 }

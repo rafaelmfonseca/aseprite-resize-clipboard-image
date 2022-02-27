@@ -1,57 +1,90 @@
+LIP = dofile("./LIP.lua")
+
 function init(plugin)
+    local configuration_path = app.fs.userConfigPath .. "resize-clipboard-image.ini"
 
-    local function ResizeClipboardImage(dlg)
+    local function file_exists(name)
+        local f = io.open(name, "r")
+
+        if f ~= nil then
+            io.close(f)
+            return true
+        else
+            return false
+        end
+    end
+
+    local function resize_clipboard_image(dlg)
         local sprite = app.activeSprite
-        local pixelSize = tonumber(dlg.data.size)
+        local pixel_size = tonumber(dlg.data.size)
+        local original_image = sprite.layers[1]:cel(1).image
 
-        local originalImage = sprite.layers[1]:cel(1).image
-        
-        local resizedLayer = sprite:newLayer()
-        resizedLayer.name = "Layer Resized"
-        sprite:newCel(resizedLayer, 1)
-
-        local resizedImage = resizedLayer:cel(1).image
-
-        for x = 0, originalImage.width - 1, 1
-        do
-            for y = 0, originalImage.height - 1, 1
+        if (original_image.width % pixel_size == 0 and original_image.height % pixel_size == 0) then
+            local resizedLayer = sprite:newLayer()
+            resizedLayer.name = "Layer Resized"
+            sprite:newCel(resizedLayer, 1)
+    
+            local resizedImage = resizedLayer:cel(1).image
+    
+            for x = 0, original_image.width - 1, 1
             do
-                if (x % pixelSize == 0) and (y % pixelSize == 0) then
-                    local newX = x / pixelSize
-                    local newY = y / pixelSize
-
-                    resizedImage:drawPixel(newX, newY, originalImage:getPixel(x, y))
+                for y = 0, original_image.height - 1, 1
+                do
+                    if (x % pixel_size == 0) and (y % pixel_size == 0) then
+                        local newX = x / pixel_size
+                        local newY = y / pixel_size
+    
+                        resizedImage:drawPixel(newX, newY, original_image:getPixel(x, y))
+                    end
                 end
             end
+    
+            sprite:deleteLayer("Layer 1")
+    
+            app.command.AutocropSprite { }
+            app.command.ShowPixelGrid { }
+            app.command.FitScreen { }
+            app.useTool { tool = "rectangular_marquee", selection = SelectionMode.REPLACE }
+
+            LIP.save(configuration_path, {
+                general = {
+                    pixel_size = dlg.data.size
+                }
+            })
+        else
+            app.alert("The image can't be resized with this pixel size.")
         end
-
-        sprite:deleteLayer("Layer 1")
-
-        app.command.AutocropSprite { }
-        app.command.ShowPixelGrid { }
-        app.command.FitScreen { }
-        app.useTool { tool = "rectangular_marquee", selection = SelectionMode.REPLACE }
-
+    
         app.refresh()
     end
 
-    local function OpenClipboardImage()
+    local function open_clipboard_image()
         app.command.NewFile {
             ui = true,
             colorMode = ColorMode.RGB,
             fromClipboard = true
         }
 
+        local configuration = nil
         local sprite = app.activeSprite
+        local pixel_size = "2"
+
+        if file_exists(configuration_path) then
+            configuration = LIP.load(configuration_path)
+        end
+
+        if (configuration ~= nil and configuration.general ~= nil and configuration.general.pixel_size ~= nil) then
+            pixel_size = configuration.general.pixel_size
+        end
 
         local dlg = Dialog { title = "Pixel Size" }
         dlg:separator { text = "Pixel properties" }
-        dlg:entry { id = "size", label = "Size", text = "4" }
+        dlg:entry { id = "size", label = "Size", text = tostring(pixel_size) }
         dlg:newrow()
         dlg:button { id = "cancel", text = "Cancel" }
         dlg:button { id = "ok", text = "OK", focus = true,
             onclick = function()
-                ResizeClipboardImage(dlg)
+                resize_clipboard_image(dlg)
                 dlg:close()
             end
         }
@@ -68,9 +101,9 @@ function init(plugin)
         app.refresh()
     end
 
-    plugin:newCommand { id = "ResizeClipboardImage", title = "Resize Clipboard Image", group = "sprite_size",
+    plugin:newCommand { id = "resize_clipboard_image", title = "Resize Clipboard Image", group = "sprite_size",
         onclick = function()
-            OpenClipboardImage()
+            open_clipboard_image()
         end
     }
 
