@@ -92,7 +92,7 @@ function init(plugin)
         if sprite then
             app.command.ShowPixelGrid { }
             app.command.Zoom { percentage = 800, action = "in", focus = "center" }
-            dlg:show()
+            dlg:show({ wait = false })
         else
             app.alert("There is no valid image on clipboard.")
             dlg:close()
