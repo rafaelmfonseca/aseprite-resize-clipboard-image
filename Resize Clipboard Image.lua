@@ -20,11 +20,11 @@ function init(plugin)
         local original_image = sprite.layers[1]:cel(1).image
 
         if (original_image.width % pixel_size == 0 and original_image.height % pixel_size == 0) then
-            local resizedLayer = sprite:newLayer()
-            resizedLayer.name = "Layer Resized"
-            sprite:newCel(resizedLayer, 1)
+            local resized_layer = sprite:newLayer()
+            resized_layer.name = "Layer Resized"
+            sprite:newCel(resized_layer, 1)
     
-            local resizedImage = resizedLayer:cel(1).image
+            local resized_image = resized_layer:cel(1).image
     
             for x = 0, original_image.width - 1, 1
             do
@@ -34,7 +34,7 @@ function init(plugin)
                         local newX = x / pixel_size
                         local newY = y / pixel_size
     
-                        resizedImage:drawPixel(newX, newY, original_image:getPixel(x, y))
+                        resized_image:drawPixel(newX, newY, original_image:getPixel(x, y))
                     end
                 end
             end
@@ -45,14 +45,16 @@ function init(plugin)
             app.command.ShowPixelGrid { }
             app.command.FitScreen { }
             app.useTool { tool = "rectangular_marquee", selection = SelectionMode.REPLACE }
+        else
+            app.alert("The image can't be resized with this pixel size.")
+        end
 
+        if pixel_size ~= nil then
             LIP.save(configuration_path, {
                 general = {
                     pixel_size = dlg.data.size
                 }
             })
-        else
-            app.alert("The image can't be resized with this pixel size.")
         end
     
         app.refresh()
